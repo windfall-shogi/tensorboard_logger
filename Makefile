@@ -2,6 +2,8 @@ PROTOC = protoc
 INCLUDES = -Iinclude
 LDFLAGS =  -lprotobuf
 
+CC = clang++
+
 PROTOS = $(wildcard proto/*.proto)
 SRCS = $(patsubst proto/%.proto,src/%.pb.cc,$(PROTOS))
 SRCS += src/tensorboard_logger.cc src/crc.cc
@@ -18,13 +20,16 @@ proto: $(PROTOS)
 	mv proto/*.h include
 
 $(OBJS): %.o: %.cc
-	g++ -std=c++11 $(INCLUDES) -c $< -o $@
+	$(CC) -std=c++11 $(INCLUDES) -c $< -o $@
 
 test: tests/test_tensorboard_logger.cc
-	g++ -std=c++11 $(INCLUDES) $(OBJS) $< -o $@ $(LDFLAGS)
+	$(CC) -std=c++11 $(INCLUDES) $(OBJS) $< -o $@ $(LDFLAGS)
 
 clean:
 	rm -f src/*.o test
 
 distclean: clean
 	rm include/*.pb.h src/*.pb.cc
+
+lib: proto obj
+	ar rcs libtensorboard_logger.a $(OBJS)
